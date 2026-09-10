@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>나는 무슨 나라의 공주? · 왕실 혈통 감정소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg-deep:#170A0C;
+    --bg-deep2:#2B0F14;
+    --card:#3B141C;
+    --card-edge:#7A3A2A;
+    --gold:#C9A227;
+    --gold-soft:#E6C87A;
+    --ink:#F3E9DC;
+    --ink-dim:#D3B29B;
+    --rose:#C4536B;
+    --line:rgba(201,162,39,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(55% 45% at 50% 0%, #4A171D 0%, var(--bg-deep) 62%),
+      var(--bg-deep);
+    font-family:'Noto Sans KR', sans-serif;
+    color:var(--ink);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:36px 16px 60px;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(201,162,39,0.55) 50%, transparent 51%),
+      radial-gradient(1px 1px at 80% 15%, rgba(201,162,39,0.4) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 60% 60%, rgba(201,162,39,0.32) 50%, transparent 51%),
+      radial-gradient(1px 1px at 30% 80%, rgba(201,162,39,0.45) 50%, transparent 51%),
+      radial-gradient(1px 1px at 90% 75%, rgba(201,162,39,0.32) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 45% 35%, rgba(201,162,39,0.28) 50%, transparent 51%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .stage{
+    width:100%;
+    max-width:430px;
+    position:relative;
+    z-index:1;
+  }
+  .brandline{
+    text-align:center;
+    color:var(--gold);
+    letter-spacing:0.35em;
+    font-size:11px;
+    margin-bottom:10px;
+    font-weight:500;
+  }
+  .brandline span{opacity:0.55;}
+
+  /* ---------- Card shell shared ---------- */
+  .panel{
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(201,162,39,0.08) 0%, transparent 55%),
+      linear-gradient(180deg, var(--card) 0%, #200A0E 100%);
+    border:1px solid var(--gold);
+    border-radius:18px;
+    padding:32px 26px 26px;
+    position:relative;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .panel::before{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    pointer-events:none;
+  }
+  .corner{
+    position:absolute;
+    width:20px;height:20px;
+    border:1px solid var(--gold);
+    opacity:0.55;
+  }
+  .corner.tl{top:14px;left:14px;border-right:none;border-bottom:none;border-radius:6px 0 0 0;}
+  .corner.tr{top:14px;right:14px;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
+  .corner.bl{bottom:14px;left:14px;border-right:none;border-top:none;border-radius:0 0 0 6px;}
+  .corner.br{bottom:14px;right:14px;border-left:none;border-top:none;border-radius:0 0 6px 0;}
+
+  h1.title{
+    font-family:'Nanum Myeongjo', serif;
+    font-weight:800;
+    text-align:center;
+    font-size:26px;
+    line-height:1.35;
+    margin:6px 0 4px;
+  }
+  p.sub{
+    text-align:center;
+    color:var(--ink-dim);
+    font-size:13.5px;
+    margin:0 0 22px;
+    line-height:1.6;
+  }
+
+  /* ---------- Upload screen ---------- */
+  .dropzone{
+    border:1.5px dashed var(--card-edge);
+    border-radius:16px;
+    padding:34px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease;
+    background:rgba(255,255,255,0.015);
+  }
+  .dropzone:hover{border-color:var(--gold); background:rgba(201,162,39,0.05);}
+  .dropzone .crown-icon{font-size:34px; display:block; margin-bottom:10px; opacity:0.9;}
+  .dropzone .dz-main{font-size:15px; font-weight:700; margin-bottom:4px;}
+  .dropzone .dz-sub{font-size:12.5px; color:var(--ink-dim);}
+  #fileInput{display:none;}
+
+  .preview-wrap{margin-top:16px; display:none; text-align:center;}
+  .preview-wrap img{
+    width:120px;height:120px;object-fit:cover;border-radius:50%;
+    border:2px solid var(--gold);
+  }
+  .preview-wrap .change-btn{
+    display:block;margin:10px auto 0;background:none;border:none;color:var(--ink-dim);
+    font-size:12px;text-decoration:underline;cursor:pointer;font-family:inherit;
+  }
+
+  .cta{
+    width:100%;
+    margin-top:20px;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color:#2B0F14;
+    font-weight:900;
+    font-size:15px;
+    font-family:'Noto Sans KR', sans-serif;
+    cursor:pointer;
+    letter-spacing:0.02em;
+    box-shadow:0 10px 24px -8px rgba(201,162,39,0.5);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .cta:active{transform:translateY(1px) scale(0.99);}
+  .cta:disabled{opacity:0.45; cursor:not-allowed; box-shadow:none;}
+  .cta.secondary{
+    background:transparent;
+    border:1px solid var(--card-edge);
+    color:var(--ink);
+    box-shadow:none;
+    font-weight:700;
+  }
+
+  .kingdom-count{
+    text-align:center;
+    margin-top:16px;
+    font-size:11.5px;
+    color:var(--ink-dim);
+    opacity:0.75;
+  }
+
+  /* ---------- Loading screen ---------- */
+  .loading-panel{display:none; text-align:center; padding:60px 26px;}
+  .seal{
+    width:70px;height:70px;margin:0 auto 22px;
+    border:2px solid var(--gold);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;
+    animation:spin 2.4s linear infinite;
+  }
+  @keyframes spin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .loading-msg{
+    font-family:'Nanum Myeongjo', serif;
+    font-size:16px;
+    font-weight:700;
+    min-height:24px;
+  }
+  .loading-bar{
+    width:100%;height:3px;background:rgba(255,255,255,0.08);
+    border-radius:3px;overflow:hidden;margin-top:24px;
+  }
+  .loading-bar > div{
+    height:100%;width:40%;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation:slide 1.3s ease-in-out infinite;
+  }
+  @keyframes slide{ 0%{transform:translateX(-100%);} 100%{transform:translateX(350%);} }
+
+  /* ---------- Result screen ---------- */
+  .result-panel{display:none;}
+  #shareCard{
+    background:linear-gradient(180deg, var(--card) 0%, #190F28 100%);
+    border:1px solid var(--card-edge);
+    border-radius:22px;
+    padding:30px 24px 24px;
+    position:relative;
+    overflow:hidden;
+  }
+  .rarity-badge{
+    position:absolute;
+    top:16px;right:16px;
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:0.08em;
+    padding:5px 10px;
+    border-radius:20px;
+    z-index:2;
+  }
+  .rarity-common{background:rgba(255,255,255,0.08); color:var(--ink-dim); border:1px solid rgba(255,255,255,0.15);}
+  .rarity-rare{background:rgba(196,83,107,0.15); color:var(--rose); border:1px solid rgba(196,83,107,0.4);}
+  .rarity-legendary{
+    background:linear-gradient(90deg,#D9B44A,#F3E5AB,#D9B44A);
+    background-size:200% 100%;
+    color:#2B0F14;
+    border:1px solid var(--gold);
+    animation:shimmer 2.5s linear infinite;
+  }
+  @keyframes shimmer{ 0%{background-position:0% 0;} 100%{background-position:200% 0;} }
+
+  .portrait-wrap{
+    width:118px;height:118px;
+    margin:4px auto 14px;
+    position:relative;
+  }
+  .portrait-wrap img{
+    width:100%;height:100%;object-fit:cover;
+    border-radius:50%;
+    border:3px solid var(--gold);
+    box-shadow:0 0 0 5px rgba(201,162,39,0.12);
+    display:block;
+  }
+  .portrait-wrap .emblem{
+    position:absolute;
+    bottom:-4px;right:-4px;
+    width:38px;height:38px;
+    background:var(--bg-deep2);
+    border:2px solid var(--gold);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;
+  }
+
+  .kingdom-name{
+    text-align:center;
+    color:var(--gold-soft);
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .royal-title{
+    font-family:'Nanum Myeongjo', serif;
+    font-weight:800;
+    font-size:25px;
+    text-align:center;
+    line-height:1.3;
+    margin-bottom:10px;
+  }
+  .tagline{
+    text-align:center;
+    color:var(--ink);
+    font-size:14px;
+    line-height:1.7;
+    padding:10px 14px;
+    background:rgba(201,162,39,0.06);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-bottom:18px;
+  }
+  .traits{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .trait-row{
+    display:flex;
+    gap:10px;
+    align-items:baseline;
+    font-size:13px;
+    line-height:1.55;
+    border-bottom:1px dashed rgba(255,255,255,0.08);
+    padding-bottom:9px;
+  }
+  .trait-row:last-child{border-bottom:none;}
+  .trait-label{
+    flex:0 0 auto;
+    color:var(--ink-dim);
+    font-size:11.5px;
+    font-weight:700;
+    white-space:nowrap;
+    padding-top:1px;
+  }
+  .trait-value{color:var(--ink); font-weight:500;}
+
+  .watermark{
+    text-align:center;
+    margin-top:16px;
+    font-size:10px;
+    letter-spacing:0.2em;
+    color:var(--ink-dim);
+    opacity:0.5;
+  }
+
+  .action-row{display:flex; gap:10px; margin-top:18px;}
+  .action-row .cta{margin-top:0;}
+  .disclaimer{
+    text-align:center;
+    font-size:10.5px;
+    color:var(--ink-dim);
+    opacity:0.55;
+    margin-top:14px;
+    line-height:1.6;
+  }
+  .error-box{
+    display:none;
+    margin-top:14px;
+    padding:12px 14px;
+    background:rgba(196,83,107,0.1);
+    border:1px solid rgba(196,83,107,0.4);
+    border-radius:10px;
+    font-size:12.5px;
+    color:var(--rose);
+    text-align:center;
+    line-height:1.6;
+  }
+
+  @media (max-width:380px){
+    .royal-title{font-size:22px;}
+    h1.title{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="brandline">❦ 왕실 혈통 감정소 <span>· ROYAL LINEAGE BUREAU</span> ❦</div>
+
+  <!-- Screen 1: Upload -->
+  <div class="panel" id="screen-upload">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <h1 class="title">나는 무슨 나라의<br/>공주일까?</h1>
+    <p class="sub">사진 한 장만 넣으면<br/>당신의 진짜 혈통을 감정해 드립니다</p>
+
+    <label class="dropzone" id="dropzone">
+      <span class="crown-icon">👑</span>
+      <span class="dz-main">사진 올리기</span>
+      <span class="dz-sub">탭해서 업로드 또는 촬영</span>
+      <input type="file" id="fileInput" accept="image/*" capture="environment" />
+    </label>
+
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" src="" alt="preview"/>
+      <button class="change-btn" id="changeBtn">다른 사진으로 바꾸기</button>
+    </div>
+
+    <button class="cta" id="startBtn" disabled>혈통 감정 시작하기</button>
+    <div class="kingdom-count">24개 왕국 중 하나로 매칭됩니다 · 레전더리 등급 존재</div>
+    <div class="error-box" id="errorBoxUpload"></div>
+  </div>
+
+  <!-- Screen 2: Loading -->
+  <div class="panel loading-panel" id="screen-loading">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="seal">👑</div>
+    <div class="loading-msg" id="loadingMsg">혈통을 감정하는 중...</div>
+    <div class="loading-bar"><div></div></div>
+  </div>
+
+  <!-- Screen 3: Result -->
+  <div class="panel result-panel" id="screen-result">
+    <div id="shareCard">
+      <div class="rarity-badge" id="rarityBadge">COMMON</div>
+      <div class="portrait-wrap">
+        <img id="resultImg" src="" alt="portrait"/>
+        <div class="emblem" id="resultEmblem">👑</div>
+      </div>
+      <div class="kingdom-name" id="kingdomName">OOO나라</div>
+      <div class="royal-title" id="royalTitle">지식공주</div>
+      <div class="tagline" id="tagline">태그라인이 여기 표시됩니다</div>
+      <div class="traits">
+        <div class="trait-row"><span class="trait-label">통치 스타일</span><span class="trait-value" id="tGovern">-</span></div>
+        <div class="trait-row"><span class="trait-label">왕국 특산물</span><span class="trait-value" id="tSpecialty">-</span></div>
+        <div class="trait-row"><span class="trait-label">저주받은 점</span><span class="trait-value" id="tCurse">-</span></div>
+        <div class="trait-row"><span class="trait-label">국정 지표</span><span class="trait-value" id="tIndicator">-</span></div>
+      </div>
+      <div class="watermark">왕실 혈통 감정소 · 나는 무슨 공주?</div>
+    </div>
+
+    <div class="action-row">
+      <button class="cta" id="saveBtn">인장 저장하기</button>
+      <button class="cta secondary" id="retryBtn">다시 감정받기</button>
+    </div>
+    <div class="disclaimer">AI가 사진 속 분위기·소품·표정을 보고 재미로 생성한 결과입니다.<br/>실제 혈통·외모 평가와 무관합니다.</div>
+    <div class="error-box" id="errorBoxResult"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const KINGDOMS = [
+    {id:"encyclopedia", name:"백과사전나라", title:"지식공주", emblem:"📚", rarity:"common", keywords:"안경, 무표정, 책상, 독서하는 분위기, 진지하고 학구적인 인상, 차분한 배경"},
+    {id:"broke", name:"거지나라", title:"생존공주", emblem:"🥡", rarity:"common", keywords:"편한 옷차림, 후줄근한 스타일, 부스스한 머리, 꾸미지 않은 캐주얼 룩"},
+    {id:"gloomy", name:"우울왕국", title:"무표정공주", emblem:"🌧️", rarity:"common", keywords:"무표정, 어두운 톤의 사진, 그늘진 배경, 시크하고 감정을 안 드러내는 표정"},
+    {id:"filter", name:"성형외과나라", title:"뽀샤시공주", emblem:"✨", rarity:"common", keywords:"과한 보정 필터, 뽀샤시한 피부, 눈이 커 보이는 카메라 앱, 인위적인 톤보정"},
+    {id:"delivery", name:"배달의민족나라", title:"먹방공주", emblem:"🍜", rarity:"common", keywords:"음식이 함께 나온 사진, 식당, 먹는 중인 모습, 배달음식, 카페 디저트"},
+    {id:"gym", name:"헬스왕국", title:"근력공주", emblem:"🏋️", rarity:"common", keywords:"운동복, 헬스장 배경, 땀 흘리는 모습, 스포츠웨어, 활동적인 포즈"},
+    {id:"pet", name:"반려왕국", title:"집사공주", emblem:"🐾", rarity:"common", keywords:"강아지나 고양이와 함께 있는 사진, 반려동물이 주인공처럼 보이는 구도"},
+    {id:"angle", name:"각도조작나라", title:"고각공주", emblem:"📐", rarity:"common", keywords:"하이앵글 셀카, 위에서 내려찍은 각도, 턱선을 강조한 구도"},
+    {id:"blackhistory", name:"흑역사왕국", title:"만취공주", emblem:"🍺", rarity:"common", keywords:"술자리, 노래방, 회식 분위기, 살짝 풀린 눈, 파티 조명"},
+    {id:"overtime", name:"야근제국", title:"사무공주", emblem:"💼", rarity:"common", keywords:"정장, 사무실 배경, 노트북, 피곤해 보이는 표정, 형광등 조명"},
+    {id:"sleepless", name:"잠못이룬왕국", title:"다크서클공주", emblem:"🌙", rarity:"common", keywords:"다크서클, 피곤한 눈, 침대나 이불 배경, 늦은 밤 분위기"},
+    {id:"instagram", name:"인스타왕국", title:"감성공주", emblem:"📸", rarity:"common", keywords:"카페 배경, 감성적인 조명, 예쁘게 연출된 구도, 라떼아트나 소품"},
+    {id:"homebody", name:"집순이제국", title:"이불공주", emblem:"🛋️", rarity:"common", keywords:"잠옷, 이불, 집안 배경, 편안하고 늘어진 자세"},
+    {id:"selfie", name:"폰카고인물왕국", title:"셀카장인공주", emblem:"🤳", rarity:"common", keywords:"정면 셀카, 안정적이고 잘 잡힌 구도, 자신감 있는 표정"},
+    {id:"student", name:"급식왕국", title:"교복공주", emblem:"🎒", rarity:"common", keywords:"교복, 학교 배경, 풋풋하고 어려 보이는 분위기, 학생 느낌"},
+    {id:"hiking", name:"등산연맹왕국", title:"정상공주", emblem:"⛰️", rarity:"common", keywords:"등산복, 산이나 자연 배경, 아웃도어 스타일, 탁 트인 풍경"},
+    {id:"natural", name:"무보정왕국", title:"꾸안꾸공주", emblem:"🌿", rarity:"rare", keywords:"보정 없이 자연스러운 사진, 편안한 일상 표정, 꾸안꾸 스타일"},
+    {id:"nofilter", name:"필터불신왕국", title:"진지공주", emblem:"🎞️", rarity:"rare", keywords:"흑백 사진, 필터 없는 진지한 예술적 사진, 깊이 있는 분위기"},
+    {id:"chaos", name:"카오스왕국", title:"난장판공주", emblem:"🌀", rarity:"rare", keywords:"정신없고 어수선한 배경, 잡동사니가 많이 보이는 방, 복잡한 구도"},
+    {id:"twist", name:"반전매력왕국", title:"반전공주", emblem:"🎭", rarity:"rare", keywords:"상황과 표정이 안 어울리는 언밸런스한 분위기, 예상 밖의 조합"},
+    {id:"mystery", name:"미스터리왕국", title:"복면공주", emblem:"🕶️", rarity:"rare", keywords:"마스크, 선글라스, 모자 등으로 얼굴 일부가 가려진 사진"},
+    {id:"perfectshot", name:"인생샷장인왕국", title:"구도공주", emblem:"🖼️", rarity:"rare", keywords:"완벽한 구도, 좋은 조명, 전문적으로 잘 찍힌 듯한 사진"},
+    {id:"visual", name:"전설의비주얼제국", title:"화보공주", emblem:"👑", rarity:"legendary", keywords:"화보처럼 매우 매력적이고 시선을 사로잡는 분위기, 프로필 사진급 퀄리티"},
+    {id:"presence", name:"우주최강존재감왕국", title:"존재감공주", emblem:"⚡", rarity:"legendary", keywords:"강렬한 카리스마, 압도적인 존재감, 사진 속에서 유독 시선을 끄는 느낌"}
+  ];
+
+  const LOADING_MESSAGES = [
+    "혈통을 감정하는 중...",
+    "왕관 사이즈 측정 중...",
+    "왕실 DNA 대조 중...",
+    "국새를 준비하는 중...",
+    "표정에서 국운을 읽는 중...",
+    "왕국 지도를 펼치는 중..."
+  ];
+
+  // ---- Elements
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const previewWrap = document.getElementById('previewWrap');
+  const previewImg = document.getElementById('previewImg');
+  const changeBtn = document.getElementById('changeBtn');
+  const startBtn = document.getElementById('startBtn');
+  const errorBoxUpload = document.getElementById('errorBoxUpload');
+  const errorBoxResult = document.getElementById('errorBoxResult');
+
+  const screenUpload = document.getElementById('screen-upload');
+  const screenLoading = document.getElementById('screen-loading');
+  const screenResult = document.getElementById('screen-result');
+  const loadingMsg = document.getElementById('loadingMsg');
+
+  const resultImg = document.getElementById('resultImg');
+  const resultEmblem = document.getElementById('resultEmblem');
+  const rarityBadge = document.getElementById('rarityBadge');
+  const kingdomNameEl = document.getElementById('kingdomName');
+  const royalTitleEl = document.getElementById('royalTitle');
+  const taglineEl = document.getElementById('tagline');
+  const tGovern = document.getElementById('tGovern');
+  const tSpecialty = document.getElementById('tSpecialty');
+  const tCurse = document.getElementById('tCurse');
+  const tIndicator = document.getElementById('tIndicator');
+
+  const saveBtn = document.getElementById('saveBtn');
+  const retryBtn = document.getElementById('retryBtn');
+
+  let currentBase64 = null;
+  let currentMediaType = null;
+  let loadingInterval = null;
+
+  // ---- Upload handling
+  dropzone.addEventListener('click', function(e){
+    if (previewWrap.style.display === 'block') { e.preventDefault(); }
+  });
+
+  fileInput.addEventListener('change', function(){
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    errorBoxUpload.style.display = 'none';
+
+    if (!file.type.startsWith('image/')) {
+      errorBoxUpload.textContent = '이미지 파일만 업로드할 수 있어요.';
+      errorBoxUpload.style.display = 'block';
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      errorBoxUpload.textContent = '10MB 이하의 사진을 사용해 주세요.';
+      errorBoxUpload.style.display = 'block';
+      return;
+    }
+
+    currentMediaType = file.type;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const dataUrl = e.target.result;
+      currentBase64 = dataUrl.split(',')[1];
+      previewImg.src = dataUrl;
+      previewWrap.style.display = 'block';
+      dropzone.style.display = 'none';
+      startBtn.disabled = false;
+    };
+    reader.onerror = function(){
+      errorBoxUpload.textContent = '사진을 불러오지 못했어요. 다시 시도해 주세요.';
+      errorBoxUpload.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  changeBtn.addEventListener('click', function(){
+    fileInput.value = '';
+    currentBase64 = null;
+    startBtn.disabled = true;
+    previewWrap.style.display = 'none';
+    dropzone.style.display = 'block';
+  });
+
+  // ---- Start analysis
+  startBtn.addEventListener('click', function(){
+    if (!currentBase64) return;
+    errorBoxUpload.style.display = 'none';
+    showScreen('loading');
+    runAnalysis();
+  });
+
+  function showScreen(name){
+    screenUpload.style.display = (name === 'upload') ? 'block' : 'none';
+    screenLoading.style.display = (name === 'loading') ? 'block' : 'none';
+    screenResult.style.display = (name === 'result') ? 'block' : 'none';
+
+    if (name === 'loading') {
+      let idx = 0;
+      loadingMsg.textContent = LOADING_MESSAGES[0];
+      loadingInterval = setInterval(function(){
+        idx = (idx + 1) % LOADING_MESSAGES.length;
+        loadingMsg.textContent = LOADING_MESSAGES[idx];
+      }, 1100);
+    } else if (loadingInterval) {
+      clearInterval(loadingInterval);
+      loadingInterval = null;
+    }
+  }
+
+  async function runAnalysis(){
+    const shuffled = KINGDOMS.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+    }
+    const kingdomBrief = shuffled.map(function(k){
+      return k.id + ' | ' + k.name + ' | 특징: ' + k.keywords;
+    }).join('\n');
+
+    const promptText =
+      "당신은 '왕실 혈통 감정소'라는 웃긴 콘셉트 앱의 감정관입니다. " +
+      "첨부된 사진 속 인물의 표정, 옷차림, 소품, 배경, 조명, 구도, 전반적 분위기를 관찰해서 " +
+      "아래 24개 '왕국' 목록 중 사진과 가장 잘 어울리는 왕국 하나를 골라주세요.\n\n" +
+      "[왕국 목록]\n" + kingdomBrief + "\n\n" +
+      "규칙:\n" +
+      "1. 반드시 위 목록의 id 중 하나만 골라야 합니다.\n" +
+      "2. 사진 속 인물의 신체적 외모(얼굴 생김새, 체형, 나이, 인종 등)에 대해서는 절대 언급하거나 평가하지 마세요. 오직 옷차림/소품/배경/표정/분위기 같은 상황적 요소만 근거로 사용하세요.\n" +
+      "3. 재치있고 과장된 드립체로, 유쾌하고 애정 어린 놀림 톤을 쓰세요. 비하나 외모 지적, 상처가 될 만한 표현은 금지입니다.\n" +
+      "4. 판단이 애매하다고 해서 '인생샷장인왕국', '전설의비주얼제국', '우주최강존재감왕국', '무보정왕국', '필터불신왕국'처럼 사진 퀄리티나 매력을 칭찬하는 무난한 왕국으로 도망치지 마세요. 이 5개는 사진에 아주 뚜렷하고 예외적인 근거가 있을 때만 선택하는 '희귀 카테고리'입니다. 먼저 사진 속 구체적인 사물·소품·옷·배경·표정 중 눈에 띄는 디테일(예: 안경, 음식, 반려동물, 운동복, 교복, 술자리, 정장, 이불, 산, 마스크, 어수선한 방 등)이 있는지부터 적극적으로 찾아서, 있다면 그 단서에 해당하는 왕국을 우선적으로 고르세요.\n" +
+      "5. 이 요청은 매번 다른 사람이 다른 사진으로 시도하는 것이므로, 특정 왕국에 안전하게 수렴하지 말고 사진에 실제로 있는 단서에 따라 과감하게 판단하세요. (세션 코드: " + Date.now() + ")\n" +
+      "6. 아래 JSON 형식으로만 응답하세요. 코드블록이나 설명, 다른 텍스트는 절대 포함하지 마세요.\n\n" +
+      "{\n" +
+      '  "kingdomId": "목록 중 하나의 id",\n' +
+      '  "tagline": "18자 내외의 임팩트있는 한 줄 태그라인",\n' +
+      '  "governStyle": "통치 스타일을 12~16자 내외로 재치있게",\n' +
+      '  "specialty": "왕국의 특산물/명물을 12~16자 내외로",\n' +
+      '  "curse": "저주받은 점을 12~16자 내외로 웃기게",\n' +
+      '  "indicator": "국정 지표(엉뚱한 통계 등)를 12~16자 내외로"\n' +
+      "}";
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mediaType: currentMediaType,
+          image: currentBase64,
+          prompt: promptText
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("API 응답 오류: " + response.status);
+      }
+
+      const data = await response.json();
+      const textBlocks = (data.content || []).filter(function(b){ return b.type === 'text'; }).map(function(b){ return b.text; });
+      let raw = textBlocks.join('\n').trim();
+
+      raw = raw.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        const match = raw.match(/\{[\s\S]*\}/);
+        if (match) { parsed = JSON.parse(match[0]); }
+        else { throw new Error("결과를 해석하지 못했어요."); }
+      }
+
+      const kingdom = KINGDOMS.find(function(k){ return k.id === parsed.kingdomId; }) || KINGDOMS[0];
+      renderResult(kingdom, parsed);
+      showScreen('result');
+
+    } catch (err) {
+      showScreen('upload');
+      errorBoxUpload.textContent = '감정에 실패했어요. 네트워크 상태를 확인하고 다시 시도해 주세요.';
+      errorBoxUpload.style.display = 'block';
+      console.error(err);
+    }
+  }
+
+  function renderResult(kingdom, parsed){
+    resultImg.src = previewImg.src;
+    resultEmblem.textContent = kingdom.emblem;
+    kingdomNameEl.textContent = kingdom.name;
+    royalTitleEl.textContent = kingdom.title;
+    taglineEl.textContent = parsed.tagline || '설명을 불러오지 못했어요';
+    tGovern.textContent = parsed.governStyle || '-';
+    tSpecialty.textContent = parsed.specialty || '-';
+    tCurse.textContent = parsed.curse || '-';
+    tIndicator.textContent = parsed.indicator || '-';
+
+    rarityBadge.className = 'rarity-badge rarity-' + kingdom.rarity;
+    rarityBadge.textContent =
+      kingdom.rarity === 'legendary' ? 'LEGENDARY' :
+      kingdom.rarity === 'rare' ? 'RARE' : 'COMMON';
+  }
+
+  // ---- Save / share
+  saveBtn.addEventListener('click', async function(){
+    errorBoxResult.style.display = 'none';
+    const card = document.getElementById('shareCard');
+    saveBtn.disabled = true;
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = '인장 제작 중...';
+
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: '#190F28', scale: 2, useCORS: true });
+      canvas.toBlob(async function(blob){
+        const fileName = 'my-royal-kingdom.png';
+        const file = new File([blob], fileName, { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: '나는 무슨 나라의 공주?', text: '내 왕실 인장이 나왔어요 👑' });
+          } catch (shareErr) {
+            downloadBlob(blob, fileName);
+          }
+        } else {
+          downloadBlob(blob, fileName);
+        }
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
+      }, 'image/png');
+    } catch (err) {
+      errorBoxResult.textContent = '이미지 저장에 실패했어요. 스크린샷으로 저장해 보세요.';
+      errorBoxResult.style.display = 'block';
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
+    }
+  });
+
+  function downloadBlob(blob, fileName){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  }
+
+  retryBtn.addEventListener('click', function(){
+    fileInput.value = '';
+    currentBase64 = null;
+    startBtn.disabled = true;
+    previewWrap.style.display = 'none';
+    dropzone.style.display = 'block';
+    errorBoxResult.style.display = 'none';
+    showScreen('upload');
+  });
+
+})();
+</script>
+</body>
+</html>
