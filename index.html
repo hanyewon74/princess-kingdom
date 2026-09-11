@@ -234,11 +234,13 @@
   }
   @keyframes shimmer{ 0%{background-position:0% 0;} 100%{background-position:200% 0;} }
 
-  .portrait-wrap{
-    width:118px;height:118px;
-    margin:4px auto 14px;
-    position:relative;
-  }
+ .portrait-wrap{
+  width:118px;
+  height:118px;
+  margin:28px auto 14px;
+  position:relative;
+  overflow:visible;
+}
   .portrait-wrap img{
     width:100%;height:100%;object-fit:cover;
     border-radius:50%;
@@ -246,6 +248,19 @@
     box-shadow:0 0 0 5px rgba(201,162,39,0.12);
     display:block;
   }
+  .princess-crown{
+  position:absolute;
+  top:-30px;
+  left:50%;
+  transform:translateX(-50%) rotate(-5deg);
+  z-index:5;
+
+  font-size:46px;
+  line-height:1;
+
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+  pointer-events:none;
+}
   .portrait-wrap .emblem{
     position:absolute;
     bottom:-4px;right:-4px;
@@ -321,6 +336,9 @@
 
   .action-row{display:flex; gap:10px; margin-top:18px;}
   .action-row .cta{margin-top:0;}
+  .retry-btn{
+  margin-top:10px;
+}
   .disclaimer{
     text-align:center;
     font-size:10.5px;
@@ -389,9 +407,10 @@
     <div id="shareCard">
       <div class="rarity-badge" id="rarityBadge">COMMON</div>
       <div class="portrait-wrap">
-        <img id="resultImg" src="" alt="portrait"/>
-        <div class="emblem" id="resultEmblem">👑</div>
-      </div>
+  <div class="princess-crown">👑</div>
+  <img id="resultImg" src="" alt="portrait"/>
+  <div class="emblem" id="resultEmblem">👑</div>
+</div>
       <div class="kingdom-name" id="kingdomName">OOO나라</div>
       <div class="royal-title" id="royalTitle">지식공주</div>
       <div class="tagline" id="tagline">태그라인이 여기 표시됩니다</div>
@@ -405,9 +424,13 @@
     </div>
 
     <div class="action-row">
-      <button class="cta" id="saveBtn">인장 저장하기</button>
-      <button class="cta secondary" id="retryBtn">다시 감정받기</button>
-    </div>
+  <button class="cta" id="saveBtn">결과 저장</button>
+  <button class="cta" id="shareBtn">공유하기</button>
+</div>
+
+<button class="cta secondary retry-btn" id="retryBtn">
+  다시 감정받기
+</button>
     <div class="disclaimer">AI가 사진 속 분위기·소품·표정을 보고 재미로 생성한 결과입니다.<br/>실제 혈통·외모 평가와 무관합니다.</div>
     <div class="error-box" id="errorBoxResult"></div>
   </div>
@@ -425,7 +448,7 @@
     {id:"delivery", name:"배달의민족나라", title:"먹방공주", emblem:"🍜", rarity:"common", keywords:"음식이 함께 나온 사진, 식당, 먹는 중인 모습, 배달음식, 카페 디저트"},
     {id:"gym", name:"헬스왕국", title:"근력공주", emblem:"🏋️", rarity:"common", keywords:"운동복, 헬스장 배경, 땀 흘리는 모습, 스포츠웨어, 활동적인 포즈"},
     {id:"pet", name:"반려왕국", title:"집사공주", emblem:"🐾", rarity:"common", keywords:"강아지나 고양이와 함께 있는 사진, 반려동물이 주인공처럼 보이는 구도"},
-    {id:"angle", name:"각도조작나라", title:"고각공주", emblem:"📐", rarity:"common", keywords:"하이앵글 셀카, 위에서 내려찍은 각도, 턱선을 강조한 구도"},
+    {id:"angle", name:"각도나라", title:"고각공주", emblem:"📐", rarity:"common", keywords:"하이앵글 셀카, 위에서 내려찍은 각도, 턱선을 강조한 구도"},
     {id:"blackhistory", name:"흑역사왕국", title:"만취공주", emblem:"🍺", rarity:"common", keywords:"술자리, 노래방, 회식 분위기, 살짝 풀린 눈, 파티 조명"},
     {id:"overtime", name:"야근제국", title:"사무공주", emblem:"💼", rarity:"common", keywords:"정장, 사무실 배경, 노트북, 피곤해 보이는 표정, 형광등 조명"},
     {id:"sleepless", name:"잠못이룬왕국", title:"다크서클공주", emblem:"🌙", rarity:"common", keywords:"다크서클, 피곤한 눈, 침대나 이불 배경, 늦은 밤 분위기"},
@@ -480,7 +503,8 @@
   const tIndicator = document.getElementById('tIndicator');
 
   const saveBtn = document.getElementById('saveBtn');
-  const retryBtn = document.getElementById('retryBtn');
+const shareBtn = document.getElementById('shareBtn');
+const retryBtn = document.getElementById('retryBtn');
 
   let currentBase64 = null;
   let currentMediaType = null;
@@ -647,52 +671,153 @@
       kingdom.rarity === 'legendary' ? 'LEGENDARY' :
       kingdom.rarity === 'rare' ? 'RARE' : 'COMMON';
   }
-
   // ---- Save / share
+
+  // 결과 카드를 이미지 파일로 만드는 공통 함수
+  async function createResultBlob() {
+    const card = document.getElementById('shareCard');
+
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#190F28',
+      scale: 2,
+      useCORS: true
+    });
+
+    return new Promise(function(resolve, reject) {
+      canvas.toBlob(function(blob) {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('이미지 생성 실패'));
+        }
+      }, 'image/png');
+    });
+  }
+
+
+  // ---- 결과 저장하기
   saveBtn.addEventListener('click', async function(){
     errorBoxResult.style.display = 'none';
-    const card = document.getElementById('shareCard');
-    saveBtn.disabled = true;
+
     const originalText = saveBtn.textContent;
-    saveBtn.textContent = '인장 제작 중...';
+    saveBtn.disabled = true;
+    saveBtn.textContent = '이미지 만드는 중...';
 
     try {
-      const canvas = await html2canvas(card, { backgroundColor: '#190F28', scale: 2, useCORS: true });
-      canvas.toBlob(async function(blob){
-        const fileName = 'my-royal-kingdom.png';
-        const file = new File([blob], fileName, { type: 'image/png' });
+      const blob = await createResultBlob();
 
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title: '나는 무슨 나라의 공주?', text: '내 왕실 인장이 나왔어요 👑' });
-          } catch (shareErr) {
-            downloadBlob(blob, fileName);
-          }
-        } else {
-          downloadBlob(blob, fileName);
-        }
-        saveBtn.disabled = false;
-        saveBtn.textContent = originalText;
-      }, 'image/png');
+      downloadBlob(
+        blob,
+        'my-royal-kingdom.png'
+      );
+
     } catch (err) {
-      errorBoxResult.textContent = '이미지 저장에 실패했어요. 스크린샷으로 저장해 보세요.';
+      console.error(err);
+
+      errorBoxResult.textContent =
+        '이미지 저장에 실패했어요. 다시 시도해 주세요.';
+
       errorBoxResult.style.display = 'block';
+
+    } finally {
       saveBtn.disabled = false;
       saveBtn.textContent = originalText;
     }
   });
 
+
+  // ---- 공유하기
+  shareBtn.addEventListener('click', async function(){
+    errorBoxResult.style.display = 'none';
+
+    const originalText = shareBtn.textContent;
+    shareBtn.disabled = true;
+    shareBtn.textContent = '공유 준비 중...';
+
+    try {
+      const blob = await createResultBlob();
+
+      const file = new File(
+        [blob],
+        'my-royal-kingdom.png',
+        { type: 'image/png' }
+      );
+
+      const shareTitle = '나는 무슨 나라의 공주?';
+
+      const shareText =
+        '나는 ' +
+        kingdomNameEl.textContent +
+        '의 ' +
+        royalTitleEl.textContent +
+        '래 👑 너도 해봐!';
+
+      // 이미지까지 공유 가능한 경우
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
+        await navigator.share({
+          files: [file],
+          title: shareTitle,
+          text: shareText
+        });
+      }
+
+      // 이미지 공유는 안 되지만 링크 공유는 가능한 경우
+      else if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: window.location.href
+        });
+      }
+
+      // PC 등 공유 기능이 없는 경우
+      else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('공유 링크를 복사했어요! 👑');
+      }
+
+    } catch (err) {
+
+      // 사용자가 공유창에서 취소한 건 오류가 아님
+      if (err.name !== 'AbortError') {
+        console.error(err);
+
+        errorBoxResult.textContent =
+          '공유에 실패했어요. 다시 시도해 주세요.';
+
+        errorBoxResult.style.display = 'block';
+      }
+
+    } finally {
+      shareBtn.disabled = false;
+      shareBtn.textContent = originalText;
+    }
+  });
+
+
+  // ---- 이미지 다운로드 함수
   function downloadBlob(blob, fileName){
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
+
     a.href = url;
     a.download = fileName;
+
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+
+    setTimeout(function(){
+      URL.revokeObjectURL(url);
+    }, 2000);
   }
 
+
+  // ---- 다시 감정받기
   retryBtn.addEventListener('click', function(){
     fileInput.value = '';
     currentBase64 = null;
@@ -702,7 +827,7 @@
     errorBoxResult.style.display = 'none';
     showScreen('upload');
   });
-
+  
 })();
 </script>
 </body>
